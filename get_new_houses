@@ -2,9 +2,7 @@
 from loguru import logger
 from dotenv import load_dotenv
 
-from generate_command import generate_url
-from db_connection import fill_entries, get_files, get_views, create_views
-from pydealista import request_idealista
+from core import IdealistaAPIManager, StorageManager, NoficationManager
 
 
 load_dotenv()
@@ -13,13 +11,17 @@ logger.add('logfile', format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level
 
 logger.info('Requesting new houses from Idealista API.')
 try:
-    url = generate_url()
-    request_idealista(url)
+    api = IdealistaAPIManager()
+    storage = StorageManager()
+    notification = NoficationManager()
+
+    api.request_idealista()
     logger.info(f'Requested new houses successfully.')
-    fill_entries(get_files())
+
+    storage.update_flats_in_database()
     logger.info(f'Inserted new houses into the database.')
-    create_views()
-    get_views()
+
+    storage.send_out_new_flats(notification)
     logger.info(f'Sent new flats to users via e-mail.')
 except Exception:
     logger.error(f'Something strange happened')
