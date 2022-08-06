@@ -9,20 +9,20 @@ load_dotenv()
 logger.add('logfile', format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level><b>{level}</b></level> | {message}",
         colorize=True, diagnose=True)
 
-logger.info('Requesting new houses from Idealista API.')
+logger.info(f'Starting idealistaParser.')
 try:
     api = IdealistaAPIManager()
     storage = StorageManager()
     notification = NoficationManager()
 
     api.request_idealista()
-    logger.info(f'Requested new houses successfully.')
+    logger.info('Requested new houses from Idealista API.')
 
     storage.update_flats_in_database()
     logger.info(f'Inserted new houses into the database.')
 
     storage.send_out_new_flats(notification)
-    logger.info(f'Sent new flats to users via e-mail.')
+    logger.info(f'Sent out new flats to users.')
 except Exception:
     logger.error(f'Something strange happened')
 
