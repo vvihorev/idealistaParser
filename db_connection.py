@@ -63,14 +63,36 @@ def get_files(folder='data/') -> list:
     return [folder + x for x in os.listdir(folder)]
 
 
+def create_views():
+    conn = sqlite3.connect('db.sqlite')
+    cur = conn.cursor()
+    cur.execute("""
+        create view if not exists for_two as
+        select address, price, rooms, url from houses
+        where rooms < 3 and price < 1000 and search_date > datetime('now', '-20 hours')
+        order by rooms, price;
+    """)
+    cur.execute("""
+        create view if not exists for_three as
+        select address, price, rooms, url from houses
+        where rooms = 3 and search_date > datetime('now', '-20 hours')
+        order by rooms, price;
+    """)
+    cur.close()
+    conn.commit()
+    conn.close()
+
+
+
 def get_views():
     conn = sqlite3.connect('db.sqlite')
     cur = conn.cursor()
-
     cur.execute('select * from for_two')
     for_two = cur.fetchall()
     cur.execute('select * from for_three')
     for_three = cur.fetchall()
+    cur.close()
+    conn.close()
 
     def print_flats(flats, for_who='two'):
         msg_body = f"<h1>Flats for {for_who}</h1>"
@@ -84,9 +106,6 @@ def get_views():
     msg_body += print_flats(for_two, 'two')
     msg_body += print_flats(for_three, 'three')
     msg_body += "</body></html>"
-
-    cur.close()
-    conn.close()
 
     email_subject = "Новые квартиры за сегодня"
     sender_email_address = os.environ.get("GMAIL_SENDER_ADDRESS")
@@ -114,4 +133,5 @@ def get_views():
 
 if __name__ == "__main__":
     fill_entries(get_files())
+    create_views()
     # get_views()
