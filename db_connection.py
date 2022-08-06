@@ -83,28 +83,26 @@ def create_views():
     conn.close()
 
 
+def print_html_flats(flats, for_who='two'):
+    msg_body = f"<h1>Flats for {for_who}</h1>"
+    for flat in flats:
+        msg_body += f"<p>Адрес: {flat[0]}, <b>Цена: {flat[1]}</b>, Комнат: {flat[2]}, Ссылка:{flat[3]}, "
+        route_to_uni = "https://www.google.com/maps/dir/Via Festa del Perdono, 7/".replace(' ', '%20') + flat[0].replace(' ', '%20')
+        msg_body += "<a href=" + route_to_uni + ">Дорога до уника</a></p>"
+    return msg_body
 
-def get_views():
-    conn = sqlite3.connect('db.sqlite')
-    cur = conn.cursor()
-    cur.execute('select * from for_two')
-    for_two = cur.fetchall()
-    cur.execute('select * from for_three')
-    for_three = cur.fetchall()
-    cur.close()
-    conn.close()
 
-    def print_flats(flats, for_who='two'):
-        msg_body = f"<h1>Flats for {for_who}</h1>"
-        for flat in flats:
-            msg_body += f"<p>Адрес: {flat[0]}, <b>Цена: {flat[1]}</b>, Комнат: {flat[2]}, Ссылка:{flat[3]}, "
-            route_to_uni = "https://www.google.com/maps/dir/Via Festa del Perdono, 7/".replace(' ', '%20') + flat[0].replace(' ', '%20')
-            msg_body += "<a href=" + route_to_uni + ">Дорога до уника</a></p>"
-        return msg_body
+def print_text_flats(flats):
+    result = ""
+    for flat in flats:
+        result += f"{flat[0]};{flat[1]};{flat[2]};{flat[3]}\n"
+    return result
 
+
+def send_email(for_two, for_three):
     msg_body = "<html><head></head><body>"
-    msg_body += print_flats(for_two, 'two')
-    msg_body += print_flats(for_three, 'three')
+    msg_body += print_html_flats(for_two, 'two')
+    msg_body += print_html_flats(for_three, 'three')
     msg_body += "</body></html>"
 
     email_subject = "Новые квартиры за сегодня"
@@ -131,7 +129,26 @@ def get_views():
     server.quit()
 
 
+def get_views(to_email=False):
+    conn = sqlite3.connect('db.sqlite')
+    cur = conn.cursor()
+    cur.execute('select * from for_two')
+    for_two = cur.fetchall()
+    cur.execute('select * from for_three')
+    for_three = cur.fetchall()
+    cur.close()
+    conn.close()
+    if to_email:
+        send_email(for_two, for_three)
+    else:
+        with open('results', 'a') as file:
+            file.write(f"Flats for: {datetime.datetime.now()}\n\n")
+            for flats in [for_two, for_three]:
+                file.write(print_text_flats(flats))
+            file.write('\n')
+
+
 if __name__ == "__main__":
     fill_entries(get_files())
     create_views()
-    # get_views()
+    get_views()
