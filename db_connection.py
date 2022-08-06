@@ -21,6 +21,8 @@ def get_entries(filepath: str):
     fields = ['address', 'numPhotos', 'price', 'priceByArea', 'rooms', 'thumbnail', 'url']
     entries = []
     for elem in elems:
+        if 'NO STUDENTS' in elem['description']:
+            continue
         elem_fields = [elem[field] for field in fields]
         elem_fields.append(str(datetime.datetime.now()))
         entries.append(tuple(elem_fields))
@@ -111,5 +113,5 @@ def get_views():
 
 
 if __name__ == "__main__":
-    # fill_entries(get_files())
-    get_views()
+    fill_entries(get_files())
+    # get_views()
