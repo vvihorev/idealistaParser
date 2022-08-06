@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+from loguru import logger
+from dotenv import load_dotenv
+
+from generate_command import generate_url
+from db_connection import fill_entries, get_files, get_views
+from pydealista import request_idealista
+
+
+load_dotenv()
+logger.add('logfile', format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level><b>{level}</b></level> | {message}",
+        colorize=True, diagnose=True)
+
+logger.info('Requesting new houses from Idealista API.')
+try:
+    url = generate_url()
+    request_idealista(url)
+    logger.info(f'Requested new houses successfully.')
+    fill_entries(get_files())
+    logger.info(f'Inserted new houses into the database.')
+    get_views()
+    logger.info(f'Sent new flats to users via e-mail.')
+except Exception:
+    logger.error(f'Something strange happened')
+
