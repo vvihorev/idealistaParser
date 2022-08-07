@@ -29,6 +29,8 @@ class IdealistaAPIManager:
         search_response = json.loads(search_json)
         search_pretty = json.dumps(search_response, indent=4, sort_keys=True)
         logger.debug('Got response from Idealista API.')
+        if not os.path.exists('data'):
+            os.mkdir('data')
         filename = "data/idealista_json_" + time.strftime("%Y-%m-%d_%H-%M") + ".json"
         with open(filename, 'w') as export:
             json.dump(search_pretty, export)
@@ -96,6 +98,8 @@ class StorageManager:
             );
             """)
         folder = self.json_data_folder
+        if not os.path.exists(self.json_data_folder):
+            os.mkdir(self.json_data_folder)
         files = [folder + x for x in os.listdir(folder)]
         for file in files:
             entries = self._get_flats_from_json(file)
